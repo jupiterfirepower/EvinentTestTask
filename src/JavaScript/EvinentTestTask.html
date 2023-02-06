@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Evinent JavaScript Test Task</title>
+  <meta name="description" content="Evinent Test Task">
+  <style>
+    canvas {
+      border: 1px solid black;
+    }
+    /* CSS */
+    .button-reset {
+      appearance: none;
+      background: #e62143;
+      border: 1px solid rgba(27, 31, 35, .15);
+      border-radius: 6px;
+      box-shadow: rgba(27, 31, 35, .1) 0 1px 0;
+      box-sizing: border-box;
+      color: #fff;
+      cursor: pointer;
+      display: inline-block;
+      font-family: -apple-system,system-ui,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 20px;
+      padding: 6px 16px;
+      position: relative;
+      text-align: center;
+      text-decoration: none;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    .button-reset:focus:not(:focus-visible):not(.focus-visible) {
+      box-shadow: none;
+      outline: none;
+    }
+
+    .button-reset:hover {
+      background-color: #2c974b;
+    }
+
+    .button-reset:focus {
+      box-shadow: rgba(46, 164, 79, .4) 0 0 0 3px;
+      outline: none;
+    }
+
+    .button-reset:disabled {
+      background-color: #94d3a2;
+      border-color: rgba(27, 31, 35, .1);
+      color: rgba(255, 255, 255, .8);
+      cursor: default;
+    }
+
+    .button-reset:active {
+      background-color: #298e46;
+      box-shadow: rgba(20, 70, 32, .2) 0 1px 0 inset;
+    }
+
+    .button-about {
+      background-color: initial;
+      background-image: linear-gradient(-180deg, #00D775, #00BD68);
+      border-radius: 5px;
+      box-shadow: rgba(0, 0, 0, 0.1) 0 2px 4px;
+      color: #FFFFFF;
+      cursor: pointer;
+      display: inline-block;
+      font-family: Inter,-apple-system,system-ui,Roboto,"Helvetica Neue",Arial,sans-serif;
+      height: 35px;
+      line-height: 35px;
+      outline: 0;
+      overflow: hidden;
+      padding: 0 20px;
+      pointer-events: auto;
+      position: relative;
+      text-align: center;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+      vertical-align: top;
+      white-space: nowrap;
+      width: 80px;
+      z-index: 9;
+      border: 0;
+   }
+
+   .button-about:hover {
+     background: #00bd68;
+   }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.2/jquery.min.js"></script>
+  <script>
+      let pointSize = 5.5;
+
+      const getPosition = (event) =>
+      {
+         var rect = canvas.getBoundingClientRect();
+
+         var x = event.clientX - rect.left;
+         var y = event.clientY - rect.top;
+
+         console.log(x, y);
+
+         return { x: x, y: y };
+      }
+
+      const getPointAt = (x, y) =>
+      {
+         for (var i = 0; i < points.length; i++)
+         {
+            if ( Math.abs(points[i].x - x) < pointSize && Math.abs(points[i].y - y) < pointSize )
+            // check if x,y is inside points bounding box. replace with pythagoras theorem if you like.
+            return i;
+         }
+
+         return -1; // no point at x,y
+       }
+
+       const redraw = () =>
+       {
+           var context = document.getElementById("area").getContext("2d");
+           // clear canvas
+           context.clearRect(0, 0, canvas.width, canvas.height);
+
+           // draw all points again
+           points.forEach(p => { drawPoints(p.x, p.y); });
+       }
+
+       const drawPoints = (x, y) =>
+       {
+           var context = document.getElementById("area").getContext("2d");
+
+           context.beginPath();
+           context.arc(x, y, pointSize, 0, Math.PI * 2, true);
+           context.strokeStyle = "red";
+           context.stroke();
+       }
+  </script>
+</head>
+<body>
+  <div class="preference">
+    <label id="a">Point A: </label>
+    <label id="alb"></label></br>
+    <label id="b">Point B: </label>
+    <label id="blb"></label></br>
+    <label id="c">Point C: </label>
+    <label id="clb"></label></br>
+    <label id="ps">Parrallelogram square: </label>
+    <label id="pslb"></label></br>
+    <label id="pc">Circle radius: </label>
+    <label id="pclb"></label></br>
+    <button id="reset" class="button-reset" type="button">Reset</button>
+    <button id="about" class="button-about" type="button">About</button>
+  </div>
+  <canvas id="area" width="600" height="600"></canvas>
+  <script>
+      class Point {
+        constructor(x, y) {
+          this.x = x;
+          this.y = y;
+        }
+      }
+
+      var canvas = document.getElementById("area");
+      var context = canvas.getContext("2d");
+
+      var points = [];
+      let isDone = false;
+      var clicks = 0;
+
+      let drag_point = -1;
+
+
+      $("#area").mousedown(function (e)
+      {
+        var pos = getPosition(e);
+        drag_point = getPointAt(pos.x, pos.y);
+
+        console.log("pos", drag_point);
+
+        if (drag_point == -1 && !isDone)
+        {
+            // no point at that position, add new point
+            drawPoints(pos.x, pos.y, context);
+            points.push(pos);
+        }
+      });
+
+      $("#area").mousemove(function (e)
+      {
+          if (drag_point != -1)
+          {
+             // if currently dragging a point...
+             var pos = getPosition(e);
+             //...update that.points position...
+             points[drag_point].x = pos.x;
+             points[drag_point].y = pos.y;
+             // ... and redraw canvas
+             redraw();
+          }
+      });
+
+      $("#area").mouseup(function (e)
+      {
+          if(isDone)
+          {
+             context.clearRect(0, 0, canvas.width, canvas.height);
+             const slice_points = points.slice(0, 3);
+
+             console.log(slice_points);
+
+             // ... and redraw canvas
+             redraw();
+
+             getParralelogramMassCenterAndFourthPoint(slice_points);
+             drawShapes(slice_points);
+          }
+
+          drag_point = -1;
+      });
+
+      var button_reset = document.getElementById("reset");
+
+      button_reset.addEventListener("click", function(e)
+      {
+        const empty = "";
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
+        isDone = false;
+        clicks = 0;
+        points = [];
+
+        document.getElementById("alb").innerHTML  = empty;
+        document.getElementById("blb").innerHTML  = empty;
+        document.getElementById("clb").innerHTML  = empty;
+        document.getElementById("pslb").innerHTML = empty;
+        document.getElementById("pclb").innerHTML = empty;
+      });
+
+      var button_about = document.getElementById("about");
+
+      button_about.addEventListener("click", function(e)
+      {
+        alert ("Powered by Oleh Parshenko in 2023 year.");
+      });
+
+      canvas.addEventListener("click", function(e)
+      {
+         clicks++;
+
+         if(!isDone)
+         {
+            const point = new Point(e.offsetX, e.offsetY);
+
+            isDone = clicks === 3 ? true : isDone;
+
+            const setHtmlText = (name, point) =>
+            {
+              let clabel = document.getElementById(name);
+              clabel.innerHTML = "x: " + point.x + " " + "y: " + point.y;
+            };
+
+            switch (clicks)
+            {
+              case 1:
+                setHtmlText("alb", point);
+                break;
+              case 2:
+                setHtmlText("blb", point);
+                break;
+              case 3:
+                setHtmlText("clb", point);
+                break;
+              default:
+                break;
+            }
+         }
+
+         if(isDone && clicks <= 3)
+         {
+            let slice_points = points.slice(0, 3);
+            getParralelogramMassCenterAndFourthPoint(slice_points);
+            drawShapes(slice_points);
+         }
+      });
+
+      const getParralelogramMassCenterAndFourthPoint = (points) =>
+      {
+          let a = points[0];
+          let b = points[1];
+          let c = points[2];
+
+          // get fourth point coordinate.
+          const point4x = c.x - b.x + a.x;
+          const point4y = c.y - b.y + a.y;
+
+          points.push(new Point(point4x, point4y));
+
+          // get parallelogram mass center(cross diagonales point).
+          const massCenterX = (b.x + point4x)/2;
+          const massCenterY = (b.y + point4y)/2;
+
+          points.push(new Point(massCenterX, massCenterY));
+      }
+
+      const setSquareAndRadiusText = (square_parrallelogram, circle_radius) =>
+      {
+         const setParrallelogramSquareText = (square_parrallelogram) => document.getElementById("pslb").innerHTML = " " + square_parrallelogram;
+         const setCircleRadiusText = (circle_radius) =>
+         {
+            rounded = (number) => +number.toFixed(2);
+            document.getElementById("pclb").innerHTML = " " + rounded(circle_radius);
+         }
+
+         setParrallelogramSquareText(square_parrallelogram);
+         setCircleRadiusText(circle_radius);
+      }
+
+      const drawShapes = (points) =>
+      {
+          let a = points[0];
+          let b = points[1];
+          let c = points[2];
+
+          context.beginPath();
+          context.moveTo(a.x, a.y);
+
+          for(let i = 1; i < points.length - 1; i++)
+          {
+             context.lineTo(points[i].x, points[i].y);
+
+             if(i === 3)
+             {
+                context.lineTo(a.x, a.y);
+             }
+          }
+
+          context.strokeStyle = "blue";
+          context.closePath();
+          context.stroke();
+
+          context.beginPath();
+
+          // find square and circle radius.
+          const fsquare_parrall = (a, b, c) => Math.abs((b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y));
+          const fcircle_radius = (square_parrallelogram) => Math.sqrt(square_parrallelogram / Math.PI);
+
+          let square_parrallelogram = fsquare_parrall(a, b, c);
+          let circle_radius = fcircle_radius(square_parrallelogram);
+
+          setSquareAndRadiusText(square_parrallelogram, circle_radius);
+
+          const massCenterX = points[4].x;
+          const massCenterY = points[4].y;
+
+          // draw yellow cicle.
+          context.arc(massCenterX, massCenterY, circle_radius, 0, 2 * Math.PI);
+
+          context.strokeStyle = "yellow";
+          context.closePath();
+          context.stroke();
+      }
+  </script>
+</body>
+</html>
